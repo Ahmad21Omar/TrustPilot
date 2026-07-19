@@ -1,0 +1,42 @@
+[
+  {
+    "id": "HO-001",
+    "name": "Alfama Boutique Guesthouse",
+    "city": "LIS",
+    "stars": 3,
+    "rating": 8.7,
+    "pricePerNightEur": 74
+  },
+  {
+    "id": "HO-002",
+    "name": "Baixa Central Hotel",
+    "city": "LIS",
+    "stars": 4,
+    "rating": 8.9,
+    "pricePerNightEur": 112
+  },
+  {
+    "id": "HO-003",
+    "name": "Belem Riverside Inn",
+    "city": "LIS",
+    "stars": 3,
+    "rating": 8.1,
+    "pricePerNightEur": 63
+  },
+  {
+    "id": "HO-004",
+    "name": "Chiado Design Suites",
+    "city": "LIS",
+    "stars": 5,
+    "rating": 9.3,
+    "pricePerNightEur": 178
+  },
+  {
+    "id": "HO-005",
+    "name": "Graca Hostel & Rooms",
+    "city": "LIS",
+    "stars": 2,
+    "rating": 7.6,
+    "pricePerNightEur": 38
+  }
+]

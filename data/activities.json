@@ -1,0 +1,50 @@
+[
+  {
+    "id": "AC-001",
+    "name": "Alfama Walking Tour & Fado History",
+    "city": "LIS",
+    "category": "culture",
+    "durationHours": 3,
+    "priceEur": 25
+  },
+  {
+    "id": "AC-002",
+    "name": "Day Trip to Sintra & Cascais",
+    "city": "LIS",
+    "category": "nature",
+    "durationHours": 8,
+    "priceEur": 65
+  },
+  {
+    "id": "AC-003",
+    "name": "Pastel de Nata Baking Class",
+    "city": "LIS",
+    "category": "food",
+    "durationHours": 2,
+    "priceEur": 45
+  },
+  {
+    "id": "AC-004",
+    "name": "Sunset Boat Tour on the Tagus",
+    "city": "LIS",
+    "category": "nature",
+    "durationHours": 2,
+    "priceEur": 39
+  },
+  {
+    "id": "AC-005",
+    "name": "Street Art Tour in Marvila",
+    "city": "LIS",
+    "category": "culture",
+    "durationHours": 3,
+    "priceEur": 28
+  },
+  {
+    "id": "AC-006",
+    "name": "Tram 28 Photo Tour",
+    "city": "LIS",
+    "category": "culture",
+    "durationHours": 2,
+    "priceEur": 18
+  }
+]

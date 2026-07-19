@@ -1,0 +1,52 @@
+[
+  {
+    "id": "FL-001",
+    "origin": "BER",
+    "destination": "LIS",
+    "departDate": "2025-05-27",
+    "returnDate": "2025-05-30",
+    "direct": true,
+    "airline": "TAP Air Portugal",
+    "priceEur": 189
+  },
+  {
+    "id": "FL-002",
+    "origin": "BER",
+    "destination": "LIS",
+    "departDate": "2025-05-28",
+    "returnDate": "2025-05-31",
+    "direct": false,
+    "airline": "Lufthansa",
+    "priceEur": 142
+  },
+  {
+    "id": "FL-003",
+    "origin": "FRA",
+    "destination": "LIS",
+    "departDate": "2025-05-27",
+    "returnDate": "2025-05-30",
+    "direct": true,
+    "airline": "TAP Air Portugal",
+    "priceEur": 215
+  },
+  {
+    "id": "FL-004",
+    "origin": "BER",
+    "destination": "LIS",
+    "departDate": "2025-05-29",
+    "returnDate": "2025-06-01",
+    "direct": true,
+    "airline": "easyJet",
+    "priceEur": 168
+  },
+  {
+    "id": "FL-005",
+    "origin": "MUC",
+    "destination": "LIS",
+    "departDate": "2025-05-27",
+    "returnDate": "2025-05-30",
+    "direct": false,
+    "airline": "Iberia",
+    "priceEur": 131
+  }
+]

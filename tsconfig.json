@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    // Target version & module system (ESM, modern Node)
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
+    // strict mode: all strict checks on (project requirement)
+    "strict": true,
+    // Array access arr[i] has type T | undefined instead of T.
+    // Forces you to handle the "not found" case — good for filtering/sorting.
+    "noUncheckedIndexedAccess": true,
+
+    // Convenience & safety
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // We do not transpile with tsc; we run with tsx.
+    // tsc only acts as a type checker (npm run typecheck).
+    "noEmit": true,
+    "types": ["node"],
+    "lib": ["ES2022"]
+  },
+  "include": ["src"]
+}
