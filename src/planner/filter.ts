@@ -31,6 +31,21 @@ export function activitiesWithinBudget(
   activities: Activity[],
   remainingEur: number,
 ): Activity[] {
-  // TODO: implement.
-  throw new Error("TODO: activitiesWithinBudget not implemented yet");
+  // Cheapest first, so we fit as many activities as possible for the money.
+  const sorted = [...activities].sort((a, b) => a.priceEur - b.priceEur);
+
+  const chosen: Activity[] = [];
+  let spent = 0; // running total; `let` because it changes each iteration
+
+  for (const activity of sorted) {
+    // Only take the activity if it still fits into the remaining budget.
+    // We `skip` (not `break`) an unaffordable one — harmless here since the
+    // list is sorted ascending, but robust even if it were not.
+    if (spent + activity.priceEur <= remainingEur) {
+      chosen.push(activity);
+      spent += activity.priceEur;
+    }
+  }
+
+  return chosen;
 }
