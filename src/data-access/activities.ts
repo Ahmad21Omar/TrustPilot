@@ -26,6 +26,32 @@ import { ActivitySchema, type Activity, type ActivityQuery } from "../types";
 export async function searchActivities(
   query: ActivityQuery,
 ): Promise<Activity[]> {
-  // TODO: implement (see above). Remove the line below afterwards.
-  throw new Error("TODO: searchActivities not implemented yet");
+  const activities = await loadJsonArray("activities.json", ActivitySchema);
+  return activities.filter((activity) => {
+    // Check city
+    if (activity.city !== query.city) {
+      return false;
+    }
+
+    // Check maxPriceEur if specified
+    if (
+      query.maxPriceEur !== undefined &&
+      activity.priceEur > query.maxPriceEur
+    ) {
+      return false;
+    }
+
+    // Check interests only if specified AND non-empty.
+    // An empty interests list must not filter everything out.
+    if (
+      query.interests !== undefined &&
+      query.interests.length > 0 &&
+      !query.interests.includes(activity.category)
+    ) {
+      return false;
+    }
+
+    // If we made it here, the activity matches all criteria
+    return true;
+  });
 }
