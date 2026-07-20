@@ -23,6 +23,27 @@ import { HotelSchema, type Hotel, type HotelQuery } from "../types";
  * TS concept: same filter pattern as searchFlights.
  */
 export async function searchHotels(query: HotelQuery): Promise<Hotel[]> {
-  // TODO: implement (see above). Remove the line below afterwards.
-  throw new Error("TODO: searchHotels not implemented yet");
+  const hotels = await loadJsonArray("hotels.json", HotelSchema);
+  return hotels.filter((hotel) => {
+    // Check city
+    if (hotel.city !== query.city) {
+      return false;
+    }
+
+    // Check maxPricePerNightEur if specified
+    if (
+      query.maxPricePerNightEur !== undefined &&
+      hotel.pricePerNightEur > query.maxPricePerNightEur
+    ) {
+      return false;
+    }
+
+    // Check minRating if specified
+    if (query.minRating !== undefined && hotel.rating < query.minRating) {
+      return false;
+    }
+
+    // If we made it here, the hotel matches all criteria
+    return true;
+  });
 }
