@@ -33,8 +33,22 @@ export function pickBestFlight(
   flights: Flight[],
   constraints: TripConstraints,
 ): Flight | undefined {
-  // TODO: implement.
-  throw new Error("TODO: pickBestFlight not implemented yet");
+
+  if (flights.length === 0) {
+    return undefined;
+  }
+
+  if (constraints.preferDirectFlight) {
+    // Filter for direct flights first
+    const directFlights = flights.filter(flight => flight.direct);
+    if (directFlights.length > 0) {
+      // Sort direct flights by price and return the cheapest
+      return [...directFlights].sort((a, b) => a.priceEur - b.priceEur)[0];
+    }
+  }
+  
+  // If no direct flights or preferDirectFlight is false, sort all flights by price
+  return [...flights].sort((a, b) => a.priceEur - b.priceEur)[0];
 }
 
 /**
@@ -53,6 +67,13 @@ export function pickBestHotel(
   hotels: Hotel[],
   constraints: TripConstraints,
 ): Hotel | undefined {
-  // TODO: implement.
-  throw new Error("TODO: pickBestHotel not implemented yet");
+
+  if (hotels.length === 0) {
+    return undefined;
+  }
+
+  // Criterion: highest guest rating. The overall trip budget is enforced
+  // globally later (planner budget step + assemble), so there is no per-night
+  // price cap here.
+  return [...hotels].sort((a, b) => b.rating - a.rating)[0];
 }
