@@ -34,6 +34,38 @@ import { FlightSchema, type Flight, type FlightQuery } from "../types";
  *     (lexicographic == chronological). No Date object needed.
  */
 export async function searchFlights(query: FlightQuery): Promise<Flight[]> {
-  // TODO: implement (see above). Remove the line below afterwards.
-  throw new Error("TODO: searchFlights not implemented yet");
+
+  const flights = await loadJsonArray("flights.json", FlightSchema);
+  
+  const filteredFlights = flights.filter((flight) => {
+    // Check destination
+    if (flight.destination !== query.destination) {
+      return false;
+    }
+    
+    // Check origin if specified
+    if (query.origin !== undefined && flight.origin !== query.origin) {
+      return false;
+    }
+    
+    // Check departDate and returnDate
+    if (flight.departDate < query.departFrom || flight.returnDate > query.returnBy) {
+      return false;
+    }
+    
+    // Check directOnly if specified
+    if (query.directOnly === true && !flight.direct) {
+      return false;
+    }
+    
+    // Check maxPriceEur if specified
+    if (query.maxPriceEur !== undefined && flight.priceEur > query.maxPriceEur) {
+      return false;
+    }
+
+    // If we made it here, the flight matches all criteria
+    return true;
+  });
+
+  return filteredFlights;
 }
