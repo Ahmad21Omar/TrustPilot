@@ -33,6 +33,24 @@ import { TripConstraintsSchema, type TripConstraints } from "../types";
 export async function extractConstraints(
   userInput: string,
 ): Promise<TripConstraints> {
-  // TODO: implement (see above). Remove the line below afterwards.
-  throw new Error("TODO: extractConstraints not implemented yet");
+  const prompt = `You extract structured travel constraints from a user's free-text request.
+Return ONLY a JSON object (no markdown fences, no commentary) with exactly these fields:
+- destination: string, IATA city code (e.g. "LIS" for Lisbon)
+- origin: string, IATA code of the departure airport; omit the field entirely if not mentioned
+- durationDays: integer, number of days
+- earliestDate: string, earliest possible departure as "YYYY-MM-DD"
+- latestDate: string, latest possible return as "YYYY-MM-DD"
+- budgetEur: number, total budget in euros
+- travelers: integer, number of travelers (use 1 if not mentioned)
+- preferDirectFlight: boolean
+- interests: array of strings drawn from ["culture", "food", "nature"] (empty array if none mentioned)
+
+User request:
+"""${userInput}"""`;
+
+  const raw = await generateStructured(prompt);
+
+  // Never trust the model blindly: parse the JSON, then validate the shape.
+  const parsed: unknown = JSON.parse(raw);
+  return TripConstraintsSchema.parse(parsed);
 }

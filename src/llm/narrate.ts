@@ -28,6 +28,19 @@ export async function narratePlan(
   plan: TravelPlan,
   constraints: TripConstraints,
 ): Promise<string> {
-  // TODO: implement (see above). Remove the line below afterwards.
-  throw new Error("TODO: narratePlan not implemented yet");
+  const prompt = `You are a friendly travel assistant. Write a short, readable travel plan
+based ONLY on the data below. Reply in the same language as the user's request.
+
+Rules:
+- Do NOT invent or change any prices, dates, names or numbers — only phrase what is given.
+- Mention the flight, the hotel and the chosen activities.
+- State the total price and whether it stays within the budget.
+
+User's original wishes:
+${JSON.stringify(constraints, null, 2)}
+
+Selected plan (authoritative data):
+${JSON.stringify(plan, null, 2)}`;
+
+  return await generateProse(prompt);
 }
