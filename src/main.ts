@@ -7,15 +7,14 @@
  * exist with clear signatures. Import them and call them in the right order.
  */
 
-// Helpful imports for your wiring (uncomment as needed):
-// import { extractConstraints } from "./llm/extract";
-// import { narratePlan } from "./llm/narrate";
-// import { searchFlights } from "./data-access/flights";
-// import { searchHotels } from "./data-access/hotels";
-// import { searchActivities } from "./data-access/activities";
-// import { pickBestFlight, pickBestHotel } from "./planner/select";
-// import { activitiesWithinBudget } from "./planner/filter";
-// import { assemblePlan } from "./planner/assemble";
+import { extractConstraints } from "./llm/extract";
+import { narratePlan } from "./llm/narrate";
+import { searchFlights } from "./data-access/flights";
+import { searchHotels } from "./data-access/hotels";
+import { searchActivities } from "./data-access/activities";
+import { pickBestFlight, pickBestHotel } from "./planner/select";
+import { activitiesWithinBudget } from "./planner/filter";
+import { assemblePlan } from "./planner/assemble";
 
 async function main(): Promise<void> {
   // Free text from the CLI arguments. Example call:
@@ -28,20 +27,54 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // TODO(your part) — wire the pipeline:
-  //   1. const constraints = await extractConstraints(userInput);
-  //   2. Build queries from constraints and fetch candidates:
-  //        searchFlights / searchHotels / searchActivities  (can run in
-  //        parallel with Promise.all — equivalent to asyncio.gather).
-  //   3. pickBestFlight / pickBestHotel; compute remaining budget;
-  //      activitiesWithinBudget.
-  //   4. assemblePlan(...) -> TravelPlan.
-  //   5. const text = await narratePlan(plan, constraints);
-  //      console.log(text);
-  //
-  // Until that is implemented:
-  console.log(`Input recognized: "${userInput}"`);
-  console.log("Pipeline not wired yet — see the TODOs in src/main.ts.");
+  // 1. LLM call #1: free text -> validated constraints.
+  const constraints = await extractConstraints(userInput);
+
+  // 2. Search candidates. Independent lookups run in parallel
+  //    (Promise.all == asyncio.gather). Note: preferDirectFlight is a
+  //    preference, so we do NOT hard-filter directOnly here — that is applied
+  //    when picking the best flight.
+  const [flights, hotels, activities] = await Promise.all([
+    searchFlights({
+      destination: constraints.destination,
+      origin: constraints.origin,
+      departFrom: constraints.earliestDate,
+      returnBy: constraints.latestDate,
+    }),
+    searchHotels({ city: constraints.destination }),
+    searchActivities({
+      city: constraints.destination,
+      interests: constraints.interests,
+    }),
+  ]);
+
+  // 3. The code decides: pick flight + hotel, then fill the remaining budget
+  //    with activities.
+  const flight = pickBestFlight(flights, constraints);
+  const hotel = pickBestHotel(hotels, constraints);
+  if (flight === undefined || hotel === undefined) {
+    console.error(
+      "No suitable flight or hotel found for these constraints. Try widening the dates or budget.",
+    );
+    process.exit(1);
+  }
+
+  const nights = constraints.durationDays - 1;
+  const remainingEur =
+    constraints.budgetEur - flight.priceEur - hotel.pricePerNightEur * nights;
+  const chosenActivities = activitiesWithinBudget(activities, remainingEur);
+
+  // 4. Assemble the final plan (computes totals + budget flag).
+  const plan = assemblePlan({
+    flight,
+    hotel,
+    activities: chosenActivities,
+    constraints,
+  });
+
+  // 5. LLM call #2: turn the plan into readable prose.
+  const text = await narratePlan(plan, constraints);
+  console.log(text);
 }
 
 // Central error handling: every error from the pipeline ends up here, cleanly
