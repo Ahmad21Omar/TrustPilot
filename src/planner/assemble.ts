@@ -5,6 +5,7 @@
  * Your task, entirely.
  */
 
+import { TravelPlanSchema } from "../types";
 import type {
   Activity,
   Flight,
@@ -47,6 +48,27 @@ export interface PlanParts {
  *     runtime and type are guaranteed consistent.
  */
 export function assemblePlan(parts: PlanParts): TravelPlan {
-  // TODO: implement.
-  throw new Error("TODO: assemblePlan not implemented yet");
+  const { flight, hotel, activities, constraints } = parts;
+
+  // 3 days = 2 nights.
+  const nights = constraints.durationDays - 1;
+
+  // Sum of all activity prices (reduce: start at 0, add each price).
+  const activitiesTotal = activities.reduce((sum, a) => sum + a.priceEur, 0);
+
+  const totalEur =
+    flight.priceEur + hotel.pricePerNightEur * nights + activitiesTotal;
+
+  const withinBudget = totalEur <= constraints.budgetEur;
+
+  // parse() both narrows the type AND guarantees at runtime that the shape is
+  // consistent with TravelPlan — a double safety net.
+  return TravelPlanSchema.parse({
+    flight,
+    hotel,
+    activities,
+    nights,
+    totalEur,
+    withinBudget,
+  });
 }
