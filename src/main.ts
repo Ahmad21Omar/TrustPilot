@@ -48,18 +48,30 @@ async function main(): Promise<void> {
     }),
   ]);
 
-  // 3. The code decides: pick flight + hotel, then fill the remaining budget
-  //    with activities.
+  // 3. The code decides: pick the flight first, then derive how much per night
+  //    is left for the hotel, then fill the remaining budget with activities.
   const flight = pickBestFlight(flights, constraints);
-  const hotel = pickBestHotel(hotels, constraints);
-  if (flight === undefined || hotel === undefined) {
+  if (flight === undefined) {
     console.error(
-      "No suitable flight or hotel found for these constraints. Try widening the dates or budget.",
+      "No suitable flight found for these constraints. Try widening the dates or budget.",
     );
     process.exit(1);
   }
 
   const nights = constraints.durationDays - 1;
+  // Per-night budget left for the hotel after the flight. Undefined when there
+  // are no nights (nothing to cap) — avoids a divide-by-zero.
+  const maxPerNight =
+    nights > 0 ? (constraints.budgetEur - flight.priceEur) / nights : undefined;
+
+  const hotel = pickBestHotel(hotels, constraints, maxPerNight);
+  if (hotel === undefined) {
+    console.error(
+      "No suitable hotel found for these constraints. Try widening the budget.",
+    );
+    process.exit(1);
+  }
+
   const remainingEur =
     constraints.budgetEur - flight.priceEur - hotel.pricePerNightEur * nights;
   const chosenActivities = activitiesWithinBudget(activities, remainingEur);

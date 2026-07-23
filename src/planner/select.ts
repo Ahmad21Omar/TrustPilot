@@ -54,26 +54,40 @@ export function pickBestFlight(
 /**
  * Picks the best hotel from a candidate list.
  *
- * @param hotels      Pre-filtered hotel candidates (from searchHotels).
- * @param constraints The user's wishes.
- * @returns The best hotel — or undefined if the list is empty.
+ * Criterion: highest guest rating. If an affordable per-night price is given,
+ * the choice is restricted to hotels within that cap (best rating among them);
+ * only if none are affordable do we fall back to the cheapest hotel, so the
+ * plan stays as cheap as possible (the budget flag then reports the overshoot).
+ * This mirrors pickBestFlight's "prefer, but fall back" pattern.
  *
- * TODO(your part):
- *   - Decide on a criterion: best value for money? Highest rating below a price
- *     cap? Your design decision.
- *   - Sort by it and take the first entry.
+ * @param hotels              Pre-filtered hotel candidates (from searchHotels).
+ * @param constraints         The user's wishes.
+ * @param maxPricePerNightEur Optional affordable price per night. Omit for a
+ *                            pure best-rating pick regardless of price.
+ * @returns The best hotel — or undefined if the list is empty.
  */
 export function pickBestHotel(
   hotels: Hotel[],
   constraints: TripConstraints,
+  maxPricePerNightEur?: number,
 ): Hotel | undefined {
-
   if (hotels.length === 0) {
     return undefined;
   }
 
-  // Criterion: highest guest rating. The overall trip budget is enforced
-  // globally later (planner budget step + assemble), so there is no per-night
-  // price cap here.
+  if (maxPricePerNightEur !== undefined) {
+    const affordable = hotels.filter(
+      (hotel) => hotel.pricePerNightEur <= maxPricePerNightEur,
+    );
+    if (affordable.length > 0) {
+      // Best rating among the affordable ones.
+      return [...affordable].sort((a, b) => b.rating - a.rating)[0];
+    }
+    // Nothing affordable: fall back to the cheapest so we overshoot as little
+    // as possible.
+    return [...hotels].sort((a, b) => a.pricePerNightEur - b.pricePerNightEur)[0];
+  }
+
+  // No cap given: purely best rating.
   return [...hotels].sort((a, b) => b.rating - a.rating)[0];
 }
