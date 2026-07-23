@@ -50,7 +50,32 @@ User request:
 
   const raw = await generateStructured(prompt);
 
-  // Never trust the model blindly: parse the JSON, then validate the shape.
-  const parsed: unknown = JSON.parse(raw);
-  return TripConstraintsSchema.parse(parsed);
+  // Models sometimes wrap JSON in ```json ... ``` fences despite instructions.
+  // Strip a leading/trailing fence before parsing.
+  const cleaned = raw
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "");
+
+  // Step 1: turn text into a value. A malformed response should fail with a
+  // clear message, not a raw SyntaxError from deep inside JSON.parse.
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch {
+    throw new Error(
+      `The model did not return valid JSON.\nRaw response:\n${raw}`,
+    );
+  }
+
+  // Step 2: never trust the shape blindly. safeParse returns a result object
+  // instead of throwing, so we can attach a helpful message (safeParse vs parse
+  // is like a returned status vs an exception in Python).
+  const result = TripConstraintsSchema.safeParse(parsed);
+  if (!result.success) {
+    throw new Error(
+      `The model's JSON did not match the expected constraints shape:\n${result.error.message}`,
+    );
+  }
+  return result.data;
 }
