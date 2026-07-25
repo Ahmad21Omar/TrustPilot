@@ -36,6 +36,7 @@ TripConstraints ──► search flights / hotels / activities (data-access)
 | `src/llm/`         | Gemini client + extraction and narration calls            |
 | `src/data-access/` | Search functions over local JSON (future MCP tools)       |
 | `src/planner/`     | Selection, budget logic and plan assembly (the decisions) |
+| `src/cli/`         | Terminal rendering of the computed plan                   |
 | `src/types.ts`     | Central zod schemas + inferred TypeScript types           |
 | `data/`            | Fake JSON data                                            |
 
@@ -49,6 +50,7 @@ object, returns plain JSON, and is `async`.
 - [`@google/genai`](https://www.npmjs.com/package/@google/genai) — Gemini
 - [`zod`](https://www.npmjs.com/package/zod) — runtime validation
 - `tsx` for running, `tsc` for type checking
+- `node:test` for the test suite — no test framework dependency
 
 ## Getting started
 
@@ -58,14 +60,44 @@ cp .env.example .env      # then put your GEMINI_API_KEY in .env
 npm run dev -- "3 days Lisbon end of May, under 500 euros, direct flight"
 ```
 
-Type check without running:
+Type check and test without running:
 
 ```bash
 npm run typecheck
+npm test
 ```
+
+The terminal output has two parts: first the plan as the code computed it, then
+the LLM's prose. Seeing both makes it obvious that the model only phrases the
+figures — it never produces them.
+
+```
+------------------------------------------------------
+                PLAN (computed in code)
+------------------------------------------------------
+Flight   TAP Air Portugal (direct)
+         BER -> LIS  2027-05-27 - 2027-05-30    189 EUR
+Hotel    Baixa Central Hotel
+         4 stars, rating 8.9  2 x 112 EUR       224 EUR
+Activities
+         Tram 28 Photo Tour                      18 EUR
+         Alfama Walking Tour & Fado History       25 EUR
+         Street Art Tour in Marvila               28 EUR
+------------------------------------------------------
+TOTAL                                           484 EUR
+Budget 500 EUR - within budget
+------------------------------------------------------
+```
+
+### Note on the model
+
+`MODEL` in [`src/llm/client.ts`](src/llm/client.ts) pins one Gemini model.
+Google retires older ones, so a `404 ... no longer available` means it is time
+to pick a current model from the
+[Gemini model list](https://ai.google.dev/gemini-api/docs/models).
 
 ## Status
 
-Scaffold in place. The business logic (search, selection, budget, assembly, and
-the LLM prompts) is implemented step by step as a learning exercise — those
-functions currently exist as signatures with `TODO` markers.
+Complete and running end to end. The search, selection, budget and assembly
+logic is implemented and covered by tests; both LLM calls work against the live
+Gemini API.
