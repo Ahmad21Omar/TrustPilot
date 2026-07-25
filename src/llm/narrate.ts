@@ -11,15 +11,16 @@ import type { TravelPlan, TripConstraints } from "../types";
 /**
  * Formulates a friendly travel text from the selected plan.
  *
- * @param plan        The fully assembled travel plan (fixed data/numbers).
- * @param constraints The original wishes (for tone/reference).
- * @returns Prose text for the terminal output.
+ * The original free text is passed in as well, and deliberately so: the
+ * extracted constraints are normalized English field names, so a plan built
+ * from a German request looks exactly like one built from an English request.
+ * Without the raw text the model has no way to tell which language to answer in.
  *
- * TODO(your part):
- *   1. Build a prompt: give the model the plan as JSON context
- *      (JSON.stringify(plan)) plus a short constraints summary.
- *   2. Instruct it to NOT invent/change any prices, only to phrase.
- *   3. `return await generateProse(prompt)`.
+ * @param plan        The fully assembled travel plan (fixed data/numbers).
+ * @param constraints The extracted wishes (for tone/reference).
+ * @param userInput   The user's original free text — the only signal for which
+ *                    language to reply in.
+ * @returns Prose text for the terminal output.
  *
  * TS concept: JSON.stringify(obj, null, 2) for pretty JSON context
  *   (equivalent to json.dumps(obj, indent=2) in Python).
@@ -27,16 +28,21 @@ import type { TravelPlan, TripConstraints } from "../types";
 export async function narratePlan(
   plan: TravelPlan,
   constraints: TripConstraints,
+  userInput: string,
 ): Promise<string> {
   const prompt = `You are a friendly travel assistant. Write a short, readable travel plan
-based ONLY on the data below. Reply in the same language as the user's request.
+based ONLY on the data below.
 
 Rules:
+- Reply in the SAME LANGUAGE the user wrote their request in (see below).
 - Do NOT invent or change any prices, dates, names or numbers — only phrase what is given.
 - Mention the flight, the hotel and the chosen activities.
 - State the total price and whether it stays within the budget.
 
-User's original wishes:
+The user's original request (authoritative for the reply language):
+"""${userInput}"""
+
+Extracted wishes:
 ${JSON.stringify(constraints, null, 2)}
 
 Selected plan (authoritative data):

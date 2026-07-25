@@ -85,7 +85,7 @@ async function main(): Promise<void> {
   });
 
   // 5. LLM call #2: turn the plan into readable prose.
-  const text = await narratePlan(plan, constraints);
+  const text = await narratePlan(plan, constraints, userInput);
   console.log(text);
 }
 
