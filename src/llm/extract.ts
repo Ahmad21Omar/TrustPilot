@@ -11,29 +11,33 @@ import { TripConstraintsSchema, type TripConstraints } from "../types";
 /**
  * Extracts structured trip constraints from the user's free text.
  *
+ * A language model has no clock, so the prompt is told today's date explicitly.
+ * Without it, "end of May" cannot be resolved to a year and the model guesses —
+ * usually its training cutoff, which then silently matches no flights at all.
+ *
  * @param userInput Free text, e.g. "3 days Lisbon end of May, under 500 euros".
+ * @param today     Reference date as "YYYY-MM-DD" for relative expressions.
+ *                  Defaults to the current date; pass a fixed value to make a
+ *                  test reproducible.
  * @returns Validated, type-safe TripConstraints.
- * @throws  If the model response is not a valid constraint object.
+ * @throws  If the model response is not valid JSON or not a valid constraint
+ *          object.
  *
- * TODO(your part):
- *   1. Build a prompt string: tell the model to return ONLY a JSON matching
- *      TripConstraints. Name the fields and formats (date as "YYYY-MM-DD",
- *      city as IATA code, budgetEur as a number ...). Append the userInput.
- *   2. Call `const raw = await generateStructured(prompt)`.
- *   3. Do NOT blindly trust JSON.parse: first `JSON.parse(raw)`, then
- *      `TripConstraintsSchema.parse(...)`. Return the validated result.
- *
- * TS concepts you need here:
- *   - Template literals for the prompt:  `... ${userInput} ...`
- *     (like f-strings in Python).
- *   - Schema.parse() throws on invalid JSON — exactly what we want.
- *     Alternatively Schema.safeParse() for a result object instead of an
- *     exception (comparable to try/except vs. a return value in Python).
+ * TS concept: `today: string = ...` is a default parameter value — the same
+ * idea as `def extract(user_input, today=None)` in Python, except the default
+ * expression is evaluated on every call, so it is safe to use a mutable/
+ * changing value here (no "mutable default argument" trap).
  */
 export async function extractConstraints(
   userInput: string,
+  today: string = new Date().toISOString().slice(0, 10),
 ): Promise<TripConstraints> {
   const prompt = `You extract structured travel constraints from a user's free-text request.
+Today's date is ${today}. Resolve every relative or partial date against it:
+"end of May" without a year means the NEXT end of May that is still in the
+future, "next weekend" means the coming weekend, and so on. Never return a date
+in the past.
+
 Return ONLY a JSON object (no markdown fences, no commentary) with exactly these fields:
 - destination: string, IATA city code (e.g. "LIS" for Lisbon)
 - origin: string, IATA code of the departure airport; omit the field entirely if not mentioned
