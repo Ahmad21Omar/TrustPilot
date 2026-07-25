@@ -15,6 +15,7 @@ import { searchActivities } from "./data-access/activities";
 import { pickBestFlight, pickBestHotel } from "./planner/select";
 import { activitiesWithinBudget } from "./planner/filter";
 import { assemblePlan } from "./planner/assemble";
+import { formatPlan } from "./cli/format-plan";
 
 async function main(): Promise<void> {
   // Free text from the CLI arguments. Example call:
@@ -84,9 +85,13 @@ async function main(): Promise<void> {
     constraints,
   });
 
-  // 5. LLM call #2: turn the plan into readable prose.
+  // 5. Output. First the figures the code computed, then the LLM's prose —
+  //    so the authoritative numbers are visible next to the phrasing.
+  console.log(formatPlan(plan, constraints));
+
+  // 6. LLM call #2: turn the plan into readable prose.
   const text = await narratePlan(plan, constraints, userInput);
-  console.log(text);
+  console.log(`\n${text}`);
 }
 
 // Central error handling: every error from the pipeline ends up here, cleanly
