@@ -11,18 +11,44 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-const apiKey = process.env.GEMINI_API_KEY;
-if (!apiKey) {
-  // Fail early and loudly instead of cryptically later. Like an assert in Python.
-  throw new Error(
-    "GEMINI_API_KEY is missing. Create a .env (see .env.example) and start with 'npm run dev'.",
-  );
+/**
+ * Central model for both calls. Change here if needed.
+ *
+ * Note: Google retires older Gemini models — if a call fails with a 404 saying
+ * the model "is no longer available", pick a current one from
+ * https://ai.google.dev/gemini-api/docs/models and update this constant.
+ */
+export const MODEL = "gemini-3.6-flash";
+
+/**
+ * The client is created LAZILY on first use, not when this module is imported.
+ *
+ * Why it matters: main.ts imports extract.ts, which imports this file. With a
+ * check at module level, a missing API key would blow up during import — before
+ * main() could even print its usage hint, and with an ugly stack trace. Creating
+ * it on demand keeps the module importable (handy for tests of the pure logic,
+ * which need no key at all) and produces the error only when an LLM call is
+ * genuinely attempted.
+ *
+ * Python anchor: a module-level global filled on first access — much like
+ * @lru_cache on a get_client() function.
+ */
+let ai: GoogleGenAI | undefined;
+
+function getClient(): GoogleGenAI {
+  // TS narrows `GoogleGenAI | undefined` to `GoogleGenAI` after this guard,
+  // so the return below needs no cast.
+  if (ai === undefined) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error(
+        "GEMINI_API_KEY is missing. Create a .env (see .env.example) and start with 'npm run dev'.",
+      );
+    }
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
 }
-
-/** Central model for both calls. Change here if needed. */
-export const MODEL = "gemini-2.5-flash";
-
-const ai = new GoogleGenAI({ apiKey });
 
 /**
  * Call for STRUCTURED extraction (LLM call #1).
@@ -34,7 +60,7 @@ const ai = new GoogleGenAI({ apiKey });
  * @returns Raw text of the model response (expected: JSON).
  */
 export async function generateStructured(prompt: string): Promise<string> {
-  const response = await ai.models.generateContent({
+  const response = await getClient().models.generateContent({
     model: MODEL,
     contents: prompt,
     config: {
@@ -53,7 +79,7 @@ export async function generateStructured(prompt: string): Promise<string> {
  * @returns Raw text of the model response (prose).
  */
 export async function generateProse(prompt: string): Promise<string> {
-  const response = await ai.models.generateContent({
+  const response = await getClient().models.generateContent({
     model: MODEL,
     contents: prompt,
     config: {
