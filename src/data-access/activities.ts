@@ -12,14 +12,11 @@ import { ActivitySchema, type Activity, type ActivityQuery } from "../types";
  * @param query Search criteria (city, optional interests/maxPrice).
  * @returns Matching activities (may be empty).
  *
- * TODO(your part):
- *   1. `const activities = await loadJsonArray("activities.json", ActivitySchema);`
- *   2. Filter by:
- *        - city must match
- *        - if query.maxPriceEur is set: priceEur <= value
- *        - if query.interests is set AND not empty: category must be
- *          contained in query.interests  (array.includes(...))
- *   3. Return the filtered array.
+ * Matching rules:
+ *   - city must match
+ *   - maxPriceEur, when given, caps priceEur
+ *   - interests filter by category, but only when the list is set AND
+ *     non-empty — an empty list means "no preference", not "match nothing"
  *
  * TS concept: `someArray.includes(x)` == `x in some_list` in Python.
  */

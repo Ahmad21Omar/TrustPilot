@@ -80,6 +80,10 @@ Design rules for this:
 - All repository text (comments, docs) in English; code identifiers in English.
 
 ## Current status
-- Scaffold in place: config, data, central types, LLM plumbing and the
-  `load-json` helper are done. All business-logic functions exist as
-  signature + JSDoc + TODO for the user to implement.
+The pipeline is complete and runs end to end against the live Gemini API.
+Search, selection, budget logic and plan assembly are implemented and covered
+by tests (`npm test`, Node's built-in runner). The terminal prints the
+code-computed plan first, then the LLM narration.
+
+The mentor rule still applies to everything new: further logic starts as
+signature + JSDoc + TODO unless the user explicitly asks for the solution.

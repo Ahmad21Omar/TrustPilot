@@ -2,7 +2,7 @@
  * Planner step 2: the GLOBAL budget decision.
  *
  * This is where what deliberately does NOT happen in the LLM takes place:
- * arithmetic and sticking to the budget. Your task, entirely.
+ * arithmetic and sticking to the budget.
  */
 
 import type { Activity } from "../types";
@@ -15,11 +15,9 @@ import type { Activity } from "../types";
  * @param remainingEur Available remaining budget for activities.
  * @returns Selected activities whose sum is <= remainingEur.
  *
- * TODO(your part):
- *   - Simplest variant: sort by price ascending and take them one by one as
- *     long as the remaining budget allows (greedy).
- *   - Keep a running sum; stop / skip when the next activity would exceed the
- *     budget.
+ * Strategy: greedy, cheapest first, so the remaining money buys as many
+ * activities as possible. An item that does not fit is skipped rather than
+ * ending the loop — harmless with a sorted list, but robust without one.
  *
  * TS concepts:
  *   - Loop: for (const a of sorted) { ... }  (like for a in sorted).

@@ -1,8 +1,8 @@
 /**
  * LLM call #1: free text  ->  validated TripConstraints.
  *
- * Your task. The plumbing (generateStructured) is ready; your job is the prompt
- * AND the validation of the response.
+ * The boundary where untrusted model output becomes typed data: nothing leaves
+ * this module unless zod has confirmed its shape.
  */
 
 import { generateStructured } from "./client";

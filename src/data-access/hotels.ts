@@ -12,13 +12,10 @@ import { HotelSchema, type Hotel, type HotelQuery } from "../types";
  * @param query Search criteria (city, optional maxPricePerNight/minRating).
  * @returns Matching hotels (may be empty).
  *
- * TODO(your part):
- *   1. `const hotels = await loadJsonArray("hotels.json", HotelSchema);`
- *   2. Filter by:
- *        - city must match
- *        - if query.maxPricePerNightEur is set: pricePerNightEur <= value
- *        - if query.minRating is set: rating >= value
- *   3. Return the filtered array.
+ * Matching rules:
+ *   - city must match
+ *   - maxPricePerNightEur, when given, caps pricePerNightEur
+ *   - minRating, when given, is the lower bound for rating
  *
  * TS concept: same filter pattern as searchFlights.
  */

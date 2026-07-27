@@ -1,8 +1,8 @@
 /**
  * LLM call #2: finished travel plan (data)  ->  readable text.
  *
- * Your task. Important: the model only FORMULATES. It computes nothing, it
- * selects nothing. All numbers in the plan are already fixed.
+ * Important: the model only FORMULATES. It computes nothing, it selects
+ * nothing. Every number in the plan is already fixed before this call.
  */
 
 import { generateProse } from "./client";

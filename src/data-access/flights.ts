@@ -16,15 +16,11 @@ import { FlightSchema, type Flight, type FlightQuery } from "../types";
  * @param query Search criteria (destination, time window, optional direct/maxPrice ...).
  * @returns Matching flights (may be empty).
  *
- * TODO(your part):
- *   1. `const flights = await loadJsonArray("flights.json", FlightSchema);`
- *   2. Filter `flights` by the query fields:
- *        - destination must match
- *        - only check origin if query.origin is set
- *        - departDate >= query.departFrom  AND  returnDate <= query.returnBy
- *        - if query.directOnly === true: only direct flights
- *        - if query.maxPriceEur is set: priceEur <= maxPriceEur
- *   3. Return the filtered array.
+ * Matching rules:
+ *   - destination must match; origin only when the query specifies one
+ *   - departDate >= query.departFrom  AND  returnDate <= query.returnBy
+ *   - directOnly === true keeps direct flights only
+ *   - maxPriceEur, when given, caps priceEur
  *
  * TS concepts:
  *   - Array.prototype.filter((f) => boolean)  (like [x for x in xs if ...]).

@@ -2,7 +2,6 @@
  * Planner step 3: combine all building blocks into ONE TravelPlan.
  *
  * Here the final numbers are computed (nights, total price, budget check).
- * Your task, entirely.
  */
 
 import { TravelPlanSchema } from "../types";
@@ -29,23 +28,18 @@ export interface PlanParts {
  * @param parts Selected flight, hotel, activities + constraints.
  * @returns A complete, internally consistent TravelPlan.
  *
- * TODO(your part):
- *   - Determine nights (derive from constraints.durationDays;
- *     common: nights = durationDays - 1).
- *   - Compute totalEur:
- *       flight price
- *     + pricePerNightEur * nights
- *     + sum of the activity prices
- *   - withinBudget = totalEur <= constraints.budgetEur.
- *   - Return an object that satisfies TravelPlan.
+ * Computed here:
+ *   - nights = durationDays - 1 (a 3-day trip has 2 nights)
+ *   - totalEur = flight + pricePerNightEur * nights + sum of activity prices
+ *   - withinBudget = totalEur <= budgetEur (hitting the budget exactly counts
+ *     as within)
  *
  * TS concepts:
  *   - Sum of a number array:
  *       activities.reduce((sum, a) => sum + a.priceEur, 0)
  *     (== sum(a.priceEur for a in activities) in Python).
- *   - The return value must structurally match TravelPlan — TS checks that.
- *     Optionally, for safety, TravelPlanSchema.parse(result) at the end, then
- *     runtime and type are guaranteed consistent.
+ *   - The return value must structurally match TravelPlan — TS checks that at
+ *     compile time, and TravelPlanSchema.parse() checks it again at runtime.
  */
 export function assemblePlan(parts: PlanParts): TravelPlan {
   const { flight, hotel, activities, constraints } = parts;

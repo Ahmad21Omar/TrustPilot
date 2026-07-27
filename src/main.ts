@@ -2,9 +2,8 @@
  * CLI entry point. Orchestrates the flow:
  *   free text -> constraints (LLM) -> search -> selection -> plan -> text (LLM).
  *
- * I built the scaffold: reading the input and the error boundary.
- * You wire the pipeline (steps 2-5) together — the needed functions already
- * exist with clear signatures. Import them and call them in the right order.
+ * The only module that talks to the outside world: it reads argv, prints, and
+ * owns the error boundary. Everything it calls is side-effect free.
  */
 
 import { extractConstraints } from "./llm/extract";

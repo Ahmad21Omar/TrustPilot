@@ -1,8 +1,8 @@
 /**
  * Planner step 1: pick the BEST offer out of many candidates.
  *
- * This is "the agent's decision" — here your code makes the choice, not the
- * LLM. Your task, entirely.
+ * This is "the agent's decision" — the choice is made here in code, never by
+ * the LLM.
  */
 
 import type { Flight, Hotel, TripConstraints } from "../types";
@@ -14,10 +14,9 @@ import type { Flight, Hotel, TripConstraints } from "../types";
  * @param constraints The user's wishes (for preference weighting).
  * @returns The best flight — or undefined if the list is empty.
  *
- * TODO(your part):
- *   - If preferDirectFlight is true: prefer direct flights, but allow
- *     non-direct flights as a fallback.
- *   - Otherwise sort by price ascending and take the first.
+ * Criterion: cheapest. When preferDirectFlight is set, direct flights win even
+ * if a stopover is cheaper — but a stopover is still taken when no direct
+ * flight exists at all ("prefer, but fall back").
  *
  * TS concepts:
  *   - [...flights].sort((a, b) => a.priceEur - b.priceEur)
