@@ -59,15 +59,18 @@ export function pickBestFlight(
  * plan stays as cheap as possible (the budget flag then reports the overshoot).
  * This mirrors pickBestFlight's "prefer, but fall back" pattern.
  *
+ * Unlike pickBestFlight this takes no TripConstraints: the only budget input it
+ * needs is the per-night cap, which the caller derives from the total budget
+ * once the flight price is known. Passing the whole constraints object would be
+ * dead weight.
+ *
  * @param hotels              Pre-filtered hotel candidates (from searchHotels).
- * @param constraints         The user's wishes.
  * @param maxPricePerNightEur Optional affordable price per night. Omit for a
  *                            pure best-rating pick regardless of price.
  * @returns The best hotel — or undefined if the list is empty.
  */
 export function pickBestHotel(
   hotels: Hotel[],
-  constraints: TripConstraints,
   maxPricePerNightEur?: number,
 ): Hotel | undefined {
   if (hotels.length === 0) {

@@ -79,7 +79,7 @@ test("pickBestFlight does not reorder the caller's array", () => {
 });
 
 test("pickBestHotel returns undefined for an empty list", () => {
-  assert.equal(pickBestHotel([], makeConstraints()), undefined);
+  assert.equal(pickBestHotel([]), undefined);
 });
 
 test("pickBestHotel takes the best rating when no price cap is given", () => {
@@ -88,7 +88,7 @@ test("pickBestHotel takes the best rating when no price cap is given", () => {
     makeHotel({ id: "great", rating: 9.2, pricePerNightEur: 300 }),
   ];
 
-  assert.equal(pickBestHotel(hotels, makeConstraints())?.id, "great");
+  assert.equal(pickBestHotel(hotels)?.id, "great");
 });
 
 test("pickBestHotel takes the best rating among the affordable hotels", () => {
@@ -98,7 +98,7 @@ test("pickBestHotel takes the best rating among the affordable hotels", () => {
     makeHotel({ id: "basic", rating: 7.4, pricePerNightEur: 60 }),
   ];
 
-  assert.equal(pickBestHotel(hotels, makeConstraints(), 150)?.id, "solid");
+  assert.equal(pickBestHotel(hotels, 150)?.id, "solid");
 });
 
 test("pickBestHotel counts a hotel exactly at the cap as affordable", () => {
@@ -107,7 +107,7 @@ test("pickBestHotel counts a hotel exactly at the cap as affordable", () => {
     makeHotel({ id: "cheaper", rating: 8, pricePerNightEur: 90 }),
   ];
 
-  assert.equal(pickBestHotel(hotels, makeConstraints(), 150)?.id, "at-cap");
+  assert.equal(pickBestHotel(hotels, 150)?.id, "at-cap");
 });
 
 test("pickBestHotel falls back to the cheapest when nothing is affordable", () => {
@@ -117,7 +117,7 @@ test("pickBestHotel falls back to the cheapest when nothing is affordable", () =
   ];
 
   assert.equal(
-    pickBestHotel(hotels, makeConstraints(), 150)?.id,
+    pickBestHotel(hotels, 150)?.id,
     "least-expensive",
   );
 });

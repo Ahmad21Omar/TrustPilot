@@ -64,7 +64,7 @@ async function main(): Promise<void> {
   const maxPerNight =
     nights > 0 ? (constraints.budgetEur - flight.priceEur) / nights : undefined;
 
-  const hotel = pickBestHotel(hotels, constraints, maxPerNight);
+  const hotel = pickBestHotel(hotels, maxPerNight);
   if (hotel === undefined) {
     console.error(
       "No suitable hotel found for these constraints. Try widening the budget.",
