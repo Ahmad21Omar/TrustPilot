@@ -30,9 +30,16 @@ export interface PlanParts {
  *
  * Computed here:
  *   - nights = durationDays - 1 (a 3-day trip has 2 nights)
- *   - totalEur = flight + pricePerNightEur * nights + sum of activity prices
+ *   - totalEur = flight + hotel nights + activities, see the pricing model below
  *   - withinBudget = totalEur <= budgetEur (hitting the budget exactly counts
  *     as within)
+ *
+ * Pricing model (what the numbers in data/ mean):
+ *   - Flight and activity prices are PER PERSON and scale with travelers.
+ *   - The hotel price is PER ROOM and NIGHT, and the party is assumed to share
+ *     one room. Splitting a larger group across rooms would need a capacity
+ *     field the sample data does not have — so this stays a documented
+ *     simplification rather than a hidden one.
  *
  * TS concepts:
  *   - Sum of a number array:
@@ -46,12 +53,17 @@ export function assemblePlan(parts: PlanParts): TravelPlan {
 
   // 3 days = 2 nights.
   const nights = constraints.durationDays - 1;
+  const { travelers } = constraints;
+
+  // Per-person prices scale with the party size; the room does not.
+  const flightTotal = flight.priceEur * travelers;
+  const hotelTotal = hotel.pricePerNightEur * nights;
 
   // Sum of all activity prices (reduce: start at 0, add each price).
-  const activitiesTotal = activities.reduce((sum, a) => sum + a.priceEur, 0);
+  const activitiesTotal =
+    activities.reduce((sum, a) => sum + a.priceEur, 0) * travelers;
 
-  const totalEur =
-    flight.priceEur + hotel.pricePerNightEur * nights + activitiesTotal;
+  const totalEur = flightTotal + hotelTotal + activitiesTotal;
 
   const withinBudget = totalEur <= constraints.budgetEur;
 

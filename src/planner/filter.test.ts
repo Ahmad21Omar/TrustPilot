@@ -63,6 +63,24 @@ test("activitiesWithinBudget returns an empty list on a zero or negative budget"
   assert.deepEqual(activitiesWithinBudget(activities, -20), []);
 });
 
+test("activitiesWithinBudget multiplies each price by the party size", () => {
+  const activities = [
+    makeActivity({ id: "a", priceEur: 30 }),
+    makeActivity({ id: "b", priceEur: 30 }),
+  ];
+
+  // For two travelers each activity costs 60, so only one fits into 100.
+  assert.equal(activitiesWithinBudget(activities, 100, 2).length, 1);
+  // The same budget covers both when travelling alone.
+  assert.equal(activitiesWithinBudget(activities, 100, 1).length, 2);
+});
+
+test("activitiesWithinBudget assumes a single traveler by default", () => {
+  const activities = [makeActivity({ priceEur: 50 })];
+
+  assert.equal(activitiesWithinBudget(activities, 50).length, 1);
+});
+
 test("activitiesWithinBudget does not reorder the caller's array", () => {
   const activities = [
     makeActivity({ id: "second", priceEur: 90 }),

@@ -75,8 +75,51 @@ test("formatPlan says so when no activity fit the budget", () => {
   assert.match(formatPlan(noActivities, constraints), /none within the remaining budget/);
 });
 
+test("formatPlan shows the multiplication behind a group price", () => {
+  const groupConstraints = makeConstraints({ durationDays: 3, travelers: 2 });
+  const groupPlan = assemblePlan({
+    flight: makeFlight({ priceEur: 189 }),
+    hotel: makeHotel({ pricePerNightEur: 112 }),
+    activities: [],
+    constraints: groupConstraints,
+  });
+
+  const output = formatPlan(groupPlan, groupConstraints);
+
+  assert.match(output, /Travelers  2/);
+  assert.match(output, /2 x 189 EUR/); // the per-person rate stays visible
+  assert.match(output, /378 EUR/); // and the line total is what is charged
+});
+
 test("formatPlan leaves no trailing whitespace on any line", () => {
   for (const line of formatPlan(plan, constraints).split("\n")) {
     assert.equal(line, line.trimEnd(), `trailing whitespace in: "${line}"`);
+  }
+});
+
+test("formatPlan keeps the price column aligned even with a very long name", () => {
+  const longNamePlan = assemblePlan({
+    flight: makeFlight(),
+    hotel: makeHotel({
+      name: "A Ridiculously Long Boutique Hotel Name That Would Break The Layout",
+    }),
+    activities: [
+      makeActivity({
+        name: "An Equally Long Guided Tour Through Every Neighbourhood In Town",
+      }),
+    ],
+    constraints,
+  });
+
+  const lines = formatPlan(longNamePlan, constraints).split("\n");
+
+  for (const line of lines) {
+    assert.ok(line.length <= 68, `line too wide (${line.length}): "${line}"`);
+  }
+  // Every price still ends on the same column.
+  const priceLines = lines.filter((line) => line.endsWith("EUR"));
+  assert.ok(priceLines.length >= 3);
+  for (const line of priceLines) {
+    assert.equal(line.length, 68, `misaligned price in: "${line}"`);
   }
 });

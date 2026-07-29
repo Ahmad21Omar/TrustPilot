@@ -13,7 +13,9 @@ import type { Activity } from "../types";
  *
  * @param activities   Candidate activities (from searchActivities).
  * @param remainingEur Available remaining budget for activities.
- * @returns Selected activities whose sum is <= remainingEur.
+ * @param travelers    Party size. Activity prices are per person, so each
+ *                     activity costs priceEur * travelers. Defaults to 1.
+ * @returns Selected activities whose total cost is <= remainingEur.
  *
  * Strategy: greedy, cheapest first, so the remaining money buys as many
  * activities as possible. An item that does not fit is skipped rather than
@@ -28,6 +30,7 @@ import type { Activity } from "../types";
 export function activitiesWithinBudget(
   activities: Activity[],
   remainingEur: number,
+  travelers: number = 1,
 ): Activity[] {
   // Cheapest first, so we fit as many activities as possible for the money.
   const sorted = [...activities].sort((a, b) => a.priceEur - b.priceEur);
@@ -36,12 +39,15 @@ export function activitiesWithinBudget(
   let spent = 0; // running total; `let` because it changes each iteration
 
   for (const activity of sorted) {
+    // What the whole party pays for this activity.
+    const cost = activity.priceEur * travelers;
+
     // Only take the activity if it still fits into the remaining budget.
     // We `skip` (not `break`) an unaffordable one — harmless here since the
     // list is sorted ascending, but robust even if it were not.
-    if (spent + activity.priceEur <= remainingEur) {
+    if (spent + cost <= remainingEur) {
       chosen.push(activity);
-      spent += activity.priceEur;
+      spent += cost;
     }
   }
 

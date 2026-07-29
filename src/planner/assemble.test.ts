@@ -64,6 +64,35 @@ test("assemblePlan treats hitting the budget exactly as within budget", () => {
   assert.equal(plan.withinBudget, true);
 });
 
+test("assemblePlan scales flight and activities with the party size", () => {
+  const plan = assemblePlan({
+    flight: makeFlight({ priceEur: 200 }),
+    hotel: makeHotel({ pricePerNightEur: 100 }),
+    activities: [makeActivity({ priceEur: 20 })],
+    constraints: makeConstraints({ durationDays: 3, travelers: 2 }),
+  });
+
+  // 2 * 200 (flight, per person) + 2 * 100 (room, per night) + 2 * 20
+  assert.equal(plan.totalEur, 640);
+});
+
+test("assemblePlan charges the hotel room once regardless of party size", () => {
+  const forOne = assemblePlan({
+    flight: makeFlight({ priceEur: 0 }),
+    hotel: makeHotel({ pricePerNightEur: 100 }),
+    activities: [],
+    constraints: makeConstraints({ durationDays: 3, travelers: 1 }),
+  });
+  const forFour = assemblePlan({
+    flight: makeFlight({ priceEur: 0 }),
+    hotel: makeHotel({ pricePerNightEur: 100 }),
+    activities: [],
+    constraints: makeConstraints({ durationDays: 3, travelers: 4 }),
+  });
+
+  assert.equal(forOne.totalEur, forFour.totalEur);
+});
+
 test("assemblePlan handles a single-day trip without any nights", () => {
   const plan = assemblePlan({
     flight: makeFlight({ priceEur: 150 }),

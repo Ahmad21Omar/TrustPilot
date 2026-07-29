@@ -59,10 +59,12 @@ async function main(): Promise<void> {
   }
 
   const nights = constraints.durationDays - 1;
+  // Flight prices are per person (see assemblePlan for the pricing model).
+  const flightTotal = flight.priceEur * constraints.travelers;
   // Per-night budget left for the hotel after the flight. Undefined when there
   // are no nights (nothing to cap) — avoids a divide-by-zero.
   const maxPerNight =
-    nights > 0 ? (constraints.budgetEur - flight.priceEur) / nights : undefined;
+    nights > 0 ? (constraints.budgetEur - flightTotal) / nights : undefined;
 
   const hotel = pickBestHotel(hotels, maxPerNight);
   if (hotel === undefined) {
@@ -73,8 +75,12 @@ async function main(): Promise<void> {
   }
 
   const remainingEur =
-    constraints.budgetEur - flight.priceEur - hotel.pricePerNightEur * nights;
-  const chosenActivities = activitiesWithinBudget(activities, remainingEur);
+    constraints.budgetEur - flightTotal - hotel.pricePerNightEur * nights;
+  const chosenActivities = activitiesWithinBudget(
+    activities,
+    remainingEur,
+    constraints.travelers,
+  );
 
   // 4. Assemble the final plan (computes totals + budget flag).
   const plan = assemblePlan({

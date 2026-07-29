@@ -14,9 +14,11 @@
 import type { TravelPlan, TripConstraints } from "../types";
 
 /** Total line width of the rendered block. */
-const WIDTH = 56;
+const WIDTH = 68;
 /** Width of the right-aligned price column. */
 const PRICE_WIDTH = 12;
+/** Space left for the label before the price column starts. */
+const LABEL_WIDTH = WIDTH - PRICE_WIDTH;
 
 /**
  * Formats a euro amount without noisy decimals on whole numbers.
@@ -29,14 +31,21 @@ function eur(amount: number): string {
 /**
  * One row: label on the left, optional price right-aligned.
  *
+ * An over-long label is clipped rather than allowed to push the price out of
+ * its column — a long hotel name must not break the alignment of every figure
+ * below it.
+ *
  * TS/JS concept: padEnd/padStart are the string padding helpers —
  * Python's str.ljust() and str.rjust().
  */
 function row(label: string, amount?: number): string {
   const price = amount === undefined ? "" : eur(amount);
+  const fitted =
+    label.length > LABEL_WIDTH
+      ? `${label.slice(0, LABEL_WIDTH - 2)}..`
+      : label;
   // trimEnd keeps rows without a price from carrying trailing padding.
-  return (label.padEnd(WIDTH - PRICE_WIDTH) + price.padStart(PRICE_WIDTH))
-    .trimEnd();
+  return (fitted.padEnd(LABEL_WIDTH) + price.padStart(PRICE_WIDTH)).trimEnd();
 }
 
 /**
@@ -53,31 +62,55 @@ export function formatPlan(
 ): string {
   const rule = "-".repeat(WIDTH);
   const { flight, hotel, activities, nights, totalEur, withinBudget } = plan;
+  const { travelers } = constraints;
 
   const hotelTotal = hotel.pricePerNightEur * nights;
+  // Per-person prices are shown as "N x price" so the multiplication behind the
+  // total is visible rather than implied.
+  const perPerson = (unitEur: number): string =>
+    travelers > 1 ? `  ${travelers} x ${eur(unitEur)}` : "";
 
   const lines: string[] = [
     rule,
     "PLAN (computed in code)".padStart((WIDTH + 23) / 2),
     rule,
-    row(`Flight   ${flight.airline}${flight.direct ? " (direct)" : ""}`),
     row(
-      `         ${flight.origin} -> ${flight.destination}  ${flight.departDate} - ${flight.returnDate}`,
-      flight.priceEur,
+      `Travelers  ${travelers}${nights > 0 ? `, ${nights} night${nights === 1 ? "" : "s"}` : ""}`,
     ),
+    row(`Flight   ${flight.airline}${flight.direct ? " (direct)" : ""}`),
+  ];
+
+  // Route and dates already fill the label column, so for a group the per-person
+  // breakdown gets a line of its own instead of being squeezed in and clipped.
+  const route = `         ${flight.origin} -> ${flight.destination}  ${flight.departDate} - ${flight.returnDate}`;
+  if (travelers > 1) {
+    lines.push(
+      row(route),
+      row(`         ${travelers} x ${eur(flight.priceEur)}`, flight.priceEur * travelers),
+    );
+  } else {
+    lines.push(row(route, flight.priceEur));
+  }
+
+  lines.push(
     row(`Hotel    ${hotel.name}`),
     row(
       `         ${hotel.stars} stars, rating ${hotel.rating}  ${nights} x ${eur(hotel.pricePerNightEur)}`,
       hotelTotal,
     ),
-  ];
+  );
 
   if (activities.length === 0) {
     lines.push(row("Activities  (none within the remaining budget)"));
   } else {
     lines.push(row("Activities"));
     for (const activity of activities) {
-      lines.push(row(`         ${activity.name}`, activity.priceEur));
+      lines.push(
+        row(
+          `         ${activity.name}${perPerson(activity.priceEur)}`,
+          activity.priceEur * travelers,
+        ),
+      );
     }
   }
 

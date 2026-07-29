@@ -36,6 +36,8 @@ based ONLY on the data below.
 Rules:
 - Reply in the SAME LANGUAGE the user wrote their request in (see below).
 - Do NOT invent or change any prices, dates, names or numbers — only phrase what is given.
+- Do NOT do any arithmetic. totalEur already covers all travelers; the flight and
+  activity prices in the plan are per person, the hotel price is per room and night.
 - Mention the flight, the hotel and the chosen activities.
 - State the total price and whether it stays within the budget.
 
