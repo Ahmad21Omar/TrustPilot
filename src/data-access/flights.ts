@@ -8,7 +8,12 @@
  */
 
 import { loadJsonArray } from "./load-json";
-import { FlightSchema, type Flight, type FlightQuery } from "../types";
+import {
+  FlightQuerySchema,
+  FlightSchema,
+  type Flight,
+  type FlightQuery,
+} from "../types";
 
 /**
  * Searches for flights matching the query.
@@ -29,7 +34,10 @@ import { FlightSchema, type Flight, type FlightQuery } from "../types";
  *   - ISO date strings "YYYY-MM-DD" can be compared directly with < / >
  *     (lexicographic == chronological). No Date object needed.
  */
-export async function searchFlights(query: FlightQuery): Promise<Flight[]> {
+export async function searchFlights(rawQuery: FlightQuery): Promise<Flight[]> {
+  // Runtime gate, not just a compile-time type. Once this is an MCP tool the
+  // query arrives as JSON from a model, where TS guarantees exactly nothing.
+  const query = FlightQuerySchema.parse(rawQuery);
 
   const flights = await loadJsonArray("flights.json", FlightSchema);
   

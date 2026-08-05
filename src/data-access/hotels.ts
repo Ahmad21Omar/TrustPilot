@@ -4,7 +4,12 @@
  */
 
 import { loadJsonArray } from "./load-json";
-import { HotelSchema, type Hotel, type HotelQuery } from "../types";
+import {
+  HotelQuerySchema,
+  HotelSchema,
+  type Hotel,
+  type HotelQuery,
+} from "../types";
 
 /**
  * Searches for hotels matching the query.
@@ -19,7 +24,10 @@ import { HotelSchema, type Hotel, type HotelQuery } from "../types";
  *
  * TS concept: same filter pattern as searchFlights.
  */
-export async function searchHotels(query: HotelQuery): Promise<Hotel[]> {
+export async function searchHotels(rawQuery: HotelQuery): Promise<Hotel[]> {
+  // See searchFlights: validate at the boundary, not just at compile time.
+  const query = HotelQuerySchema.parse(rawQuery);
+
   const hotels = await loadJsonArray("hotels.json", HotelSchema);
   return hotels.filter((hotel) => {
     // Check city

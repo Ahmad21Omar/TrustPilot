@@ -80,33 +80,45 @@ export type TripConstraints = z.infer<typeof TripConstraintsSchema>;
  * ------------------------------------------------------------------ *
  * Each data-access function takes EXACTLY ONE such object.
  * Reason: 1:1 translation into an MCP tool input schema later.
+ *
+ * All three are .strict(): an unrecognized key is an error, not something to
+ * quietly drop. Inside this project TypeScript already prevents typos, but once
+ * these are MCP tools the caller is a language model — and a model that sends
+ * `maxPrice` instead of `maxPriceEur` should get a clear complaint rather than
+ * silently unfiltered results.
  */
 
 /** Input for searchFlights(). */
-export const FlightQuerySchema = z.object({
-  destination: z.string(),
-  origin: z.string().optional(),
-  departFrom: z.string(), // earliest departure, ISO
-  returnBy: z.string(), // latest return, ISO
-  directOnly: z.boolean().optional(),
-  maxPriceEur: z.number().positive().optional(),
-});
+export const FlightQuerySchema = z
+  .object({
+    destination: z.string(),
+    origin: z.string().optional(),
+    departFrom: z.string(), // earliest departure, ISO
+    returnBy: z.string(), // latest return, ISO
+    directOnly: z.boolean().optional(),
+    maxPriceEur: z.number().positive().optional(),
+  })
+  .strict();
 export type FlightQuery = z.infer<typeof FlightQuerySchema>;
 
 /** Input for searchHotels(). */
-export const HotelQuerySchema = z.object({
-  city: z.string(),
-  maxPricePerNightEur: z.number().positive().optional(),
-  minRating: z.number().min(0).max(10).optional(),
-});
+export const HotelQuerySchema = z
+  .object({
+    city: z.string(),
+    maxPricePerNightEur: z.number().positive().optional(),
+    minRating: z.number().min(0).max(10).optional(),
+  })
+  .strict();
 export type HotelQuery = z.infer<typeof HotelQuerySchema>;
 
 /** Input for searchActivities(). */
-export const ActivityQuerySchema = z.object({
-  city: z.string(),
-  interests: z.array(z.string()).optional(),
-  maxPriceEur: z.number().positive().optional(),
-});
+export const ActivityQuerySchema = z
+  .object({
+    city: z.string(),
+    interests: z.array(z.string()).optional(),
+    maxPriceEur: z.number().positive().optional(),
+  })
+  .strict();
 export type ActivityQuery = z.infer<typeof ActivityQuerySchema>;
 
 /* ------------------------------------------------------------------ *

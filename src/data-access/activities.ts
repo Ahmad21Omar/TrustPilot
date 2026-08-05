@@ -4,7 +4,12 @@
  */
 
 import { loadJsonArray } from "./load-json";
-import { ActivitySchema, type Activity, type ActivityQuery } from "../types";
+import {
+  ActivityQuerySchema,
+  ActivitySchema,
+  type Activity,
+  type ActivityQuery,
+} from "../types";
 
 /**
  * Searches for activities matching the query.
@@ -21,8 +26,11 @@ import { ActivitySchema, type Activity, type ActivityQuery } from "../types";
  * TS concept: `someArray.includes(x)` == `x in some_list` in Python.
  */
 export async function searchActivities(
-  query: ActivityQuery,
+  rawQuery: ActivityQuery,
 ): Promise<Activity[]> {
+  // See searchFlights: validate at the boundary, not just at compile time.
+  const query = ActivityQuerySchema.parse(rawQuery);
+
   const activities = await loadJsonArray("activities.json", ActivitySchema);
   return activities.filter((activity) => {
     // Check city
