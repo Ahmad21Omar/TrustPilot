@@ -14,6 +14,7 @@ import { searchActivities } from "./data-access/activities";
 import { pickBestFlight, pickBestHotel } from "./planner/select";
 import { activitiesWithinBudget } from "./planner/filter";
 import { assemblePlan } from "./planner/assemble";
+import { nightsBetween } from "./planner/dates";
 import { formatPlan } from "./cli/format-plan";
 
 async function main(): Promise<void> {
@@ -58,7 +59,9 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const nights = constraints.durationDays - 1;
+  // The flight is booked first, so the stay it implies is what the hotel gets
+  // charged for — assemblePlan derives its nights the same way.
+  const nights = nightsBetween(flight.departDate, flight.returnDate);
   // Flight prices are per person (see assemblePlan for the pricing model).
   const flightTotal = flight.priceEur * constraints.travelers;
   // Per-night budget left for the hotel after the flight. Undefined when there

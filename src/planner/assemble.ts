@@ -5,6 +5,7 @@
  */
 
 import { TravelPlanSchema } from "../types";
+import { nightsBetween } from "./dates";
 import type {
   Activity,
   Flight,
@@ -29,7 +30,10 @@ export interface PlanParts {
  * @returns A complete, internally consistent TravelPlan.
  *
  * Computed here:
- *   - nights = durationDays - 1 (a 3-day trip has 2 nights)
+ *   - nights, from the SELECTED FLIGHT's dates — not from constraints.
+ *     durationDays. The user's wish is what we search with; the booked flight
+ *     is what actually gets paid for, and only that can be charged. Deriving
+ *     nights from the wish would let a 3-night flight be billed as 2 nights.
  *   - totalEur = flight + hotel nights + activities, see the pricing model below
  *   - withinBudget = totalEur <= budgetEur (hitting the budget exactly counts
  *     as within)
@@ -51,8 +55,8 @@ export interface PlanParts {
 export function assemblePlan(parts: PlanParts): TravelPlan {
   const { flight, hotel, activities, constraints } = parts;
 
-  // 3 days = 2 nights.
-  const nights = constraints.durationDays - 1;
+  // The stay is as long as the flight makes it, not as long as it was wished for.
+  const nights = nightsBetween(flight.departDate, flight.returnDate);
   const { travelers } = constraints;
 
   // Per-person prices scale with the party size; the room does not.

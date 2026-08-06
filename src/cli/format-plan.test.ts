@@ -21,7 +21,13 @@ import { assemblePlan } from "../planner/assemble";
 const constraints = makeConstraints({ durationDays: 3, budgetEur: 500 });
 
 const plan = assemblePlan({
-  flight: makeFlight({ airline: "TAP Air Portugal", priceEur: 189 }),
+  // The dates carry the night count — 27th to 29th is two nights.
+  flight: makeFlight({
+    airline: "TAP Air Portugal",
+    priceEur: 189,
+    departDate: "2027-05-27",
+    returnDate: "2027-05-29",
+  }),
   hotel: makeHotel({ name: "Baixa Central Hotel", pricePerNightEur: 112 }),
   activities: [makeActivity({ name: "Tram 28 Photo Tour", priceEur: 18 })],
   constraints,
