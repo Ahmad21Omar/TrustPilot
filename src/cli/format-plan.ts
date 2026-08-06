@@ -122,8 +122,21 @@ export function formatPlan(
         withinBudget ? "within budget" : "OVER BUDGET"
       }`,
     ),
-    rule,
   );
+
+  // The plan is priced on the flight's dates, so if no flight of the requested
+  // length existed, say so rather than letting the night count quietly differ
+  // from what was asked for.
+  const wantedNights = constraints.durationDays - 1;
+  if (nights !== wantedNights) {
+    lines.push(
+      row(
+        `Note: no flight matched ${constraints.durationDays} days - this trip is ${nights} night${nights === 1 ? "" : "s"}`,
+      ),
+    );
+  }
+
+  lines.push(rule);
 
   return lines.join("\n");
 }

@@ -72,22 +72,26 @@ the LLM's prose. Seeing both makes it obvious that the model only phrases the
 figures — it never produces them.
 
 ```
-------------------------------------------------------
-                PLAN (computed in code)
-------------------------------------------------------
+--------------------------------------------------------------------
+                      PLAN (computed in code)
+--------------------------------------------------------------------
+Travelers  1, 2 nights
 Flight   TAP Air Portugal (direct)
-         BER -> LIS  2027-05-27 - 2027-05-30    189 EUR
-Hotel    Baixa Central Hotel
-         4 stars, rating 8.9  2 x 112 EUR       224 EUR
+         BER -> LIS  2027-05-27 - 2027-05-29                 205 EUR
+Hotel    Chiado Design Suites
+         5 stars, rating 9.3  2 x 178 EUR                    356 EUR
 Activities
-         Tram 28 Photo Tour                      18 EUR
-         Alfama Walking Tour & Fado History       25 EUR
-         Street Art Tour in Marvila               28 EUR
-------------------------------------------------------
-TOTAL                                           484 EUR
-Budget 500 EUR - within budget
-------------------------------------------------------
+         Tram 28 Photo Tour                                   18 EUR
+--------------------------------------------------------------------
+TOTAL                                                        579 EUR
+Budget 600 EUR - within budget
+--------------------------------------------------------------------
 ```
+
+Prices are per person for flights and activities and per room for the hotel, so
+the total scales with the party size. The night count comes from the selected
+flight's dates — if no flight matches the requested trip length, the plan says
+so instead of quietly pricing a different trip.
 
 ### Note on the model
 

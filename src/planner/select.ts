@@ -6,6 +6,12 @@
  */
 
 import type { Flight, Hotel, TripConstraints } from "../types";
+import { nightsBetween } from "./dates";
+
+/** Cheapest first; copies, because .sort() would reorder the caller's array. */
+function cheapest(flights: Flight[]): Flight | undefined {
+  return [...flights].sort((a, b) => a.priceEur - b.priceEur)[0];
+}
 
 /**
  * Picks the best flight from a candidate list.
@@ -14,9 +20,14 @@ import type { Flight, Hotel, TripConstraints } from "../types";
  * @param constraints The user's wishes (for preference weighting).
  * @returns The best flight — or undefined if the list is empty.
  *
- * Criterion: cheapest. When preferDirectFlight is set, direct flights win even
- * if a stopover is cheaper — but a stopover is still taken when no direct
- * flight exists at all ("prefer, but fall back").
+ * Preferences, strongest first — each one narrows the field, and each falls
+ * back to the wider field when nothing satisfies it:
+ *   1. Trips that last as long as the user asked for. This outranks price and
+ *      directness: the length of the trip is the request, not a nice-to-have,
+ *      and it is what the hotel gets billed for.
+ *   2. Direct flights, when preferDirectFlight is set — even if a stopover
+ *      would be cheaper.
+ *   3. Cheapest.
  *
  * TS concepts:
  *   - [...flights].sort((a, b) => a.priceEur - b.priceEur)
@@ -37,17 +48,24 @@ export function pickBestFlight(
     return undefined;
   }
 
+  // A 3-day trip means 2 nights away.
+  const wantedNights = constraints.durationDays - 1;
+  const rightLength = flights.filter(
+    (flight) =>
+      nightsBetween(flight.departDate, flight.returnDate) === wantedNights,
+  );
+  // Nothing of the requested length? Better to offer a trip of the wrong length
+  // than nothing at all — the renderer points the mismatch out.
+  const candidates = rightLength.length > 0 ? rightLength : flights;
+
   if (constraints.preferDirectFlight) {
-    // Filter for direct flights first
-    const directFlights = flights.filter(flight => flight.direct);
+    const directFlights = candidates.filter((flight) => flight.direct);
     if (directFlights.length > 0) {
-      // Sort direct flights by price and return the cheapest
-      return [...directFlights].sort((a, b) => a.priceEur - b.priceEur)[0];
+      return cheapest(directFlights);
     }
   }
-  
-  // If no direct flights or preferDirectFlight is false, sort all flights by price
-  return [...flights].sort((a, b) => a.priceEur - b.priceEur)[0];
+
+  return cheapest(candidates);
 }
 
 /**

@@ -15,8 +15,75 @@ import assert from "node:assert/strict";
 import { pickBestFlight, pickBestHotel } from "./select";
 import { makeConstraints, makeFlight, makeHotel } from "../test-fixtures";
 
+/**
+ * A flight spanning exactly `nights` nights. The default fixture is 3 nights,
+ * so tests that do not care about length keep working unchanged.
+ */
+function flightOf(nights: number, overrides: Parameters<typeof makeFlight>[0] = {}) {
+  const depart = new Date(Date.UTC(2027, 4, 27));
+  const back = new Date(depart.getTime() + nights * 86_400_000);
+  return makeFlight({
+    departDate: depart.toISOString().slice(0, 10),
+    returnDate: back.toISOString().slice(0, 10),
+    ...overrides,
+  });
+}
+
 test("pickBestFlight returns undefined for an empty list", () => {
   assert.equal(pickBestFlight([], makeConstraints()), undefined);
+});
+
+test("pickBestFlight prefers the requested trip length over a lower price", () => {
+  const flights = [
+    flightOf(5, { id: "cheap-but-too-long", priceEur: 100 }),
+    flightOf(2, { id: "right-length", priceEur: 250 }),
+  ];
+
+  // 3 days = 2 nights.
+  const best = pickBestFlight(flights, makeConstraints({ durationDays: 3 }));
+
+  assert.equal(best?.id, "right-length");
+});
+
+test("pickBestFlight prefers the requested length over directness", () => {
+  const flights = [
+    flightOf(5, { id: "direct-but-too-long", direct: true, priceEur: 100 }),
+    flightOf(2, { id: "right-length-stopover", direct: false, priceEur: 250 }),
+  ];
+
+  const best = pickBestFlight(
+    flights,
+    makeConstraints({ durationDays: 3, preferDirectFlight: true }),
+  );
+
+  assert.equal(best?.id, "right-length-stopover");
+});
+
+test("pickBestFlight still prefers direct among trips of the right length", () => {
+  const flights = [
+    flightOf(2, { id: "right-length-stopover", direct: false, priceEur: 100 }),
+    flightOf(2, { id: "right-length-direct", direct: true, priceEur: 250 }),
+    flightOf(5, { id: "too-long-direct", direct: true, priceEur: 50 }),
+  ];
+
+  const best = pickBestFlight(
+    flights,
+    makeConstraints({ durationDays: 3, preferDirectFlight: true }),
+  );
+
+  assert.equal(best?.id, "right-length-direct");
+});
+
+test("pickBestFlight falls back to another length rather than returning nothing", () => {
+  const flights = [
+    flightOf(5, { id: "expensive", priceEur: 300 }),
+    flightOf(4, { id: "cheap", priceEur: 120 }),
+  ];
+
+  // Nothing spans the requested 2 nights.
+  const best = pickBestFlight(flights, makeConstraints({ durationDays: 3 }));
+
+  assert.equal(best?.id, "cheap");
 });
 
 test("pickBestFlight prefers a direct flight even when it is pricier", () => {

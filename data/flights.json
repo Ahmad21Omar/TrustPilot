@@ -48,5 +48,35 @@
     "direct": false,
     "airline": "Iberia",
     "priceEur": 131
+  },
+  {
+    "id": "FL-006",
+    "origin": "BER",
+    "destination": "LIS",
+    "departDate": "2027-05-27",
+    "returnDate": "2027-05-29",
+    "direct": true,
+    "airline": "TAP Air Portugal",
+    "priceEur": 205
+  },
+  {
+    "id": "FL-007",
+    "origin": "BER",
+    "destination": "LIS",
+    "departDate": "2027-05-26",
+    "returnDate": "2027-05-28",
+    "direct": false,
+    "airline": "Ryanair",
+    "priceEur": 158
+  },
+  {
+    "id": "FL-008",
+    "origin": "BER",
+    "destination": "LIS",
+    "departDate": "2027-05-24",
+    "returnDate": "2027-05-31",
+    "direct": true,
+    "airline": "TAP Air Portugal",
+    "priceEur": 232
   }
 ]

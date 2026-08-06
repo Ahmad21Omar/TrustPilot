@@ -97,6 +97,25 @@ test("formatPlan shows the multiplication behind a group price", () => {
   assert.match(output, /378 EUR/); // and the line total is what is charged
 });
 
+test("formatPlan stays quiet when the trip has the requested length", () => {
+  // 3 days requested, 2 nights booked — that is a match.
+  assert.doesNotMatch(formatPlan(plan, constraints), /Note: no flight matched/);
+});
+
+test("formatPlan points out a trip that is not the requested length", () => {
+  const mismatched = assemblePlan({
+    flight: makeFlight({ departDate: "2027-05-27", returnDate: "2027-05-31" }),
+    hotel: makeHotel(),
+    activities: [],
+    constraints, // asks for 3 days, i.e. 2 nights
+  });
+
+  const output = formatPlan(mismatched, constraints);
+
+  assert.match(output, /Note: no flight matched 3 days/);
+  assert.match(output, /4 nights/);
+});
+
 test("formatPlan leaves no trailing whitespace on any line", () => {
   for (const line of formatPlan(plan, constraints).split("\n")) {
     assert.equal(line, line.trimEnd(), `trailing whitespace in: "${line}"`);
