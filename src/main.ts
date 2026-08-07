@@ -11,6 +11,7 @@ import { narratePlan } from "./llm/narrate";
 import { searchFlights } from "./data-access/flights";
 import { searchHotels } from "./data-access/hotels";
 import { searchActivities } from "./data-access/activities";
+import { listDestinations } from "./data-access/destinations";
 import { pickBestFlight, pickBestHotel } from "./planner/select";
 import { activitiesWithinBudget } from "./planner/filter";
 import { assemblePlan } from "./planner/assemble";
@@ -25,11 +26,25 @@ async function main(): Promise<void> {
     console.error(
       'Please provide a travel request, e.g.:\n  npm run dev -- "3 days Lisbon end of May, under 500 euros"',
     );
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   // 1. LLM call #1: free text -> validated constraints.
   const constraints = await extractConstraints(userInput);
+
+  // 1b. Fail honestly on a city this dataset does not cover. Without this the
+  //     run dies later on an empty flight list and blames the dates or the
+  //     budget — advice that cannot possibly help.
+  const destinations = await listDestinations();
+  if (!destinations.includes(constraints.destination)) {
+    console.error(
+      `This demo runs on sample data and only covers: ${destinations.join(", ")}.\n` +
+        `It has nothing for ${constraints.destination}, so no plan can be built.`,
+    );
+    process.exitCode = 1;
+    return;
+  }
 
   // 2. Search candidates. Independent lookups run in parallel
   //    (Promise.all == asyncio.gather). Note: preferDirectFlight is a
@@ -53,10 +68,13 @@ async function main(): Promise<void> {
   //    is left for the hotel, then fill the remaining budget with activities.
   const flight = pickBestFlight(flights, constraints);
   if (flight === undefined) {
+    // The destination is covered (checked above), so the date window is the
+    // only thing that can have excluded every flight.
     console.error(
-      "No suitable flight found for these constraints. Try widening the dates or budget.",
+      `No flight to ${constraints.destination} between ${constraints.earliestDate} and ${constraints.latestDate}. Try a wider date range.`,
     );
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   // The flight is booked first, so the stay it implies is what the hotel gets
@@ -71,10 +89,9 @@ async function main(): Promise<void> {
 
   const hotel = pickBestHotel(hotels, maxPerNight);
   if (hotel === undefined) {
-    console.error(
-      "No suitable hotel found for these constraints. Try widening the budget.",
-    );
-    process.exit(1);
+    console.error(`No hotel available in ${constraints.destination}.`);
+    process.exitCode = 1;
+    return;
   }
 
   const remainingEur =
@@ -104,7 +121,12 @@ async function main(): Promise<void> {
 
 // Central error handling: every error from the pipeline ends up here, cleanly
 // instead of as an unhandled rejection. (Python anchor: try/except around main().)
+//
+// Note process.exitCode rather than process.exit(): exit() tears the process
+// down immediately, and on Windows that made libuv print an assertion failure
+// about a handle still closing — a working program looking like it crashed.
+// Setting the code lets Node finish its shutdown and exit on its own.
 main().catch((err: unknown) => {
   console.error("\nError:", err instanceof Error ? err.message : err);
-  process.exit(1);
+  process.exitCode = 1;
 });
